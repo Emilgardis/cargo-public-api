@@ -150,57 +150,6 @@ fn list_public_items_with_color() {
 
 #[serial]
 #[test]
-fn diff_public_items_markdown() {
-    ensure_test_crate_is_cloned();
-
-    let mut cmd = Command::cargo_bin("cargo-public-api").unwrap();
-    cmd.current_dir(test_crate_path());
-    cmd.arg("--output-format=markdown");
-    cmd.arg("--diff-git-checkouts");
-    cmd.arg("v0.6.0");
-    cmd.arg("v0.7.1");
-    cmd.assert()
-        .stdout(r"## Removed items from the public API
-* `pub fn public_items::PublicItem::hash<__H: $crate::hash::Hasher>(&self, state: &mut __H) -> ()`
-* `pub fn public_items::diff::PublicItemsDiff::print_with_headers(&self, w: &mut impl std::io::Write, header_removed: &str, header_changed: &str, header_added: &str) -> std::io::Result<()>`
-
-## Changed items in the public API
-* `pub fn public_items::PublicItem::fmt(&self, f: &mut $crate::fmt::Formatter<'_>) -> $crate::fmt::Result` changed to
-  `pub fn public_items::PublicItem::fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result`
-* `pub fn public_items::diff::PublicItemsDiff::between(old: Vec<PublicItem>, new: Vec<PublicItem>) -> Self` changed to
-  `pub fn public_items::diff::PublicItemsDiff::between(old_items: Vec<PublicItem>, new_items: Vec<PublicItem>) -> Self`
-
-## Added items to the public API
-* `pub fn public_items::diff::ChangedPublicItem::cmp(&self, other: &ChangedPublicItem) -> $crate::cmp::Ordering`
-* `pub fn public_items::diff::ChangedPublicItem::eq(&self, other: &ChangedPublicItem) -> bool`
-* `pub fn public_items::diff::ChangedPublicItem::ne(&self, other: &ChangedPublicItem) -> bool`
-* `pub fn public_items::diff::ChangedPublicItem::partial_cmp(&self, other: &ChangedPublicItem) -> $crate::option::Option<$crate::cmp::Ordering>`
-* `pub fn public_items::diff::PublicItemsDiff::eq(&self, other: &PublicItemsDiff) -> bool`
-* `pub fn public_items::diff::PublicItemsDiff::ne(&self, other: &PublicItemsDiff) -> bool`
-
-",
-        )
-        .success();
-}
-
-#[serial]
-#[test]
-fn diff_public_items_markdown_no_changes() {
-    ensure_test_crate_is_cloned();
-
-    let mut cmd = Command::cargo_bin("cargo-public-api").unwrap();
-    cmd.current_dir(test_crate_path());
-    cmd.arg("--output-format=markdown");
-    cmd.arg("--diff-git-checkouts");
-    cmd.arg("v0.2.0");
-    cmd.arg("v0.3.0");
-    cmd.assert()
-        .stdout("(No changes to the public API)\n")
-        .success();
-}
-
-#[serial]
-#[test]
 fn diff_public_items_from_files() {
     let mut cmd = Command::cargo_bin("cargo-public-api").unwrap();
     cmd.arg("--diff-rustdoc-json");
@@ -242,22 +191,6 @@ fn diff_public_items_missing_one_arg() {
             "requires at least 2 values but only 1 was provided",
         ))
         .failure();
-}
-
-#[serial]
-#[test]
-fn list_public_items_markdown() {
-    let mut cmd = Command::cargo_bin("cargo-public-api").unwrap();
-    cmd.arg("--output-format=markdown");
-    cmd.assert()
-        .stdout(
-            "## Public API\n\
-             * `pub fn cargo_public_api::for_self_testing_purposes_please_ignore()`\n\
-             * `pub mod cargo_public_api`\n\
-             \n\
-             ",
-        )
-        .success();
 }
 
 #[serial]

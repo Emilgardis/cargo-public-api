@@ -2,7 +2,6 @@ use std::io::stdout;
 use std::path::{Path, PathBuf};
 
 use anyhow::{anyhow, Context, Result};
-use output_formatter::OutputFormatter;
 use public_api::{
     public_api_from_rustdoc_json_str, Options, PublicItem, MINIMUM_RUSTDOC_JSON_VERSION,
 };
@@ -12,7 +11,6 @@ use rustdoc_json::BuildError;
 
 mod arg_types;
 mod git_utils;
-mod markdown;
 mod output_formatter;
 mod plain;
 
@@ -71,7 +69,7 @@ pub struct Args {
     #[clap(long, min_values = 2, max_values = 2)]
     diff_rustdoc_json: Option<Vec<String>>,
 
-    /// What output format to use. You can select between "plain" and "markdown".
+    /// What output format to use. Currently only "plain".
     #[clap(long, name = "FORMAT", default_value = "plain")]
     output_format: arg_types::OutputFormat,
 

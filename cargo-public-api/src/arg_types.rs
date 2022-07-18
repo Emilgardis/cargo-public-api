@@ -2,12 +2,11 @@ use anyhow::anyhow;
 
 use std::str::FromStr;
 
-use crate::{markdown::Markdown, output_formatter::OutputFormatter, plain::Plain};
+use crate::{output_formatter::OutputFormatter, plain::Plain};
 
 #[derive(Debug)]
 pub enum OutputFormat {
     Plain,
-    Markdown,
 }
 
 impl FromStr for OutputFormat {
@@ -16,7 +15,6 @@ impl FromStr for OutputFormat {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "plain" => Ok(OutputFormat::Plain),
-            "markdown" => Ok(OutputFormat::Markdown),
             _ => Err(anyhow!("See --help")),
         }
     }
@@ -26,7 +24,6 @@ impl OutputFormat {
     pub fn formatter(&self) -> Box<dyn OutputFormatter> {
         match self {
             OutputFormat::Plain => Box::new(Plain),
-            OutputFormat::Markdown => Box::new(Markdown),
         }
     }
 }
