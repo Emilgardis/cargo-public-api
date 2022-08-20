@@ -3,8 +3,8 @@ use std::rc::Rc;
 
 use rustdoc_types::{
     Abi, Constant, FnDecl, FunctionPointer, GenericArg, GenericArgs, GenericBound, GenericParamDef,
-    GenericParamDefKind, Generics, Header, ItemEnum, MacroKind, Path, PolyTrait, Term, Type,
-    TypeBinding, TypeBindingKind, Variant, WherePredicate,
+    GenericParamDefKind, Generics, Header, ItemEnum, MacroKind, Path, PolyTrait, StructKind, Term,
+    Type, TypeBinding, TypeBindingKind, WherePredicate,
 };
 
 /// A simple macro to write `Token::Whitespace` in less characters.
@@ -37,7 +37,7 @@ pub fn token_stream(item: &IntermediatePublicItem) -> Vec<Token> {
             output.extend(render_generics(&s.generics));
             output
         }
-        ItemEnum::StructField(inner) => {
+        ItemEnum::Field(inner) => {
             let mut output = render_simple(&["struct", "field"], &item.path());
             output.extend(colon());
             output.extend(render_type(inner));
@@ -48,13 +48,11 @@ pub fn token_stream(item: &IntermediatePublicItem) -> Vec<Token> {
             output.extend(render_generics(&e.generics));
             output
         }
-        ItemEnum::Variant(inner) => {
+        ItemEnum::Variant(variant) => {
             let mut output = render_simple(&["enum", "variant"], &item.path());
-            match inner {
-                Variant::Struct(_) | // Each struct field is printed individually
-                Variant::Plain => {}
-                Variant::Tuple(types) => output.extend(render_tuple( types)),
-
+            match variant.kind {
+                StructKind::NamedFields | StructKind::Unit => {} // Each struct field is printed individually
+                StructKind::Tuple => output.extend(render_tuple(&item.enum_tuple_variant_types)),
             }
             output
         }

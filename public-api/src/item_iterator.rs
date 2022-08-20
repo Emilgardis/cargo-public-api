@@ -1,6 +1,6 @@
-use std::{collections::HashMap, fmt::Display, rc::Rc};
+use std::{collections::HashMap, fmt::Display, hash::Hash, rc::Rc};
 
-use rustdoc_types::{Crate, Id, Impl, Item, ItemEnum, Path, Type};
+use rustdoc_types::{Crate, Id, Impl, Item, ItemEnum, Path, StructKind, Type, Variant};
 
 use super::intermediate_public_item::IntermediatePublicItem;
 use crate::{tokens::Token, Options};
@@ -125,10 +125,29 @@ impl<'a> ItemIterator<'a> {
             }
         }
 
+        let mut enum_tuple_variant_types: Vec<Type> = vec![];
+        if let ItemEnum::Variant(Variant {
+            kind: StructKind::Tuple,
+            fields,
+            ..
+        }) = &item.inner
+        {
+            for id in fields {
+                if let Some(Item {
+                    inner: ItemEnum::Field(type_),
+                    ..
+                }) = self.crate_.index.get(id)
+                {
+                    enum_tuple_variant_types.push(type_.clone());
+                }
+            }
+        }
+
         let public_item = Rc::new(IntermediatePublicItem::new(
             item,
             name.unwrap_or("<<no_name>>"),
             parent,
+            enum_tuple_variant_types,
         ));
 
         self.items_left.push(public_item);
@@ -189,8 +208,7 @@ fn items_in_container(item: &Item) -> Option<&Vec<Id>> {
         ItemEnum::Enum(e) => Some(&e.variants),
         ItemEnum::Trait(t) => Some(&t.items),
         ItemEnum::Impl(i) => Some(&i.items),
-        ItemEnum::Variant(rustdoc_types::Variant::Struct(ids)) => Some(ids),
-        // TODO: `ItemEnum::Variant(rustdoc_types::Variant::Tuple(ids)) => Some(ids),` when https://github.com/rust-lang/rust/issues/92945 is fixed
+        ItemEnum::Variant(rustdoc_types::Variant { fields, .. }) => Some(fields),
         _ => None,
     }
 }

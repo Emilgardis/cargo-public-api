@@ -1,7 +1,7 @@
 use crate::render;
 use std::rc::Rc;
 
-use rustdoc_types::Item;
+use rustdoc_types::{Item, Type};
 
 use crate::tokens::Token;
 
@@ -18,6 +18,10 @@ pub struct IntermediatePublicItem<'a> {
     /// renamed imports (`pub use other::item as foo;`) it is the new name.
     pub name: &'a str,
 
+    /// This is a special case for enum variant tuple types. See where this code
+    /// is used for more details.
+    pub enum_tuple_variant_types: Vec<Type>,
+
     /// The parent item. If [Self::item] is e.g. an enum variant, then the
     /// parent is an enum. We follow the chain of parents to be able to know the
     /// correct path to an item in the output.
@@ -30,8 +34,14 @@ impl<'a> IntermediatePublicItem<'a> {
         item: &'a Item,
         name: &'a str,
         parent: Option<Rc<IntermediatePublicItem<'a>>>,
+        enum_tuple_variant_types: Vec<Type>,
     ) -> Self {
-        Self { item, name, parent }
+        Self {
+            item,
+            name,
+            enum_tuple_variant_types,
+            parent,
+        }
     }
 
     #[must_use]
